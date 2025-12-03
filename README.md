@@ -269,7 +269,7 @@ In Auth0:
 6. Click **Deploy**.
 7. Add this Action to your **Login Flow**:
 
-![Auth0 Trigger](Images/Screenshots/auth0-trigger.png)
+![Auth0 Trigger](../arkham-sso/Images/Screenshots/auth0-trigger.png)
 
 ## Running the App
 
@@ -289,11 +289,11 @@ Use **"Login with Microsoft Entra"** to start the SAML → Auth0 → OIDC flow.
 
 ### Before Login
 
-![Before](Images/Screenshots/before.png)
+![Before](../arkham-sso/Images/Screenshots/before.png)
 
 ### After Login (Authenticated State)
 
-![After](Images/Screenshots/after.png)
+![After](../arkham-sso/Images/Screenshots/after.png)
 
 ## Testing
 
