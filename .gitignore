@@ -1,18 +1,15 @@
-# NPM dependencies
-node_modules
-package-lock.json
-
-# IDE configurations
-.idea
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
-!.vscode/tasks.json
-
-# macOS files
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Misc
+# Environment variables
 .env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node modules
+node_modules/
+
+# Optional (editor junk)
+.DS_Store
+.idea/
+.vscode/
