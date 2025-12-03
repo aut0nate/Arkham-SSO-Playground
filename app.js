@@ -1,11 +1,25 @@
 // app.js
 import express from 'express';
-import { auth, requiresAuth } from 'express-openid-connect';
+import pkg from 'express-openid-connect';
+const { auth, requiresAuth } = pkg;
 import dotenv from 'dotenv';
+
+// Map Azure group GUIDs to friendly application roles
+const GROUP_ROLE_MAP = {
+  "defbac70-abd2-464d-a100-ae801597f814": "Arkham App - Administrator",
+  "3669003e-1155-4d33-9b00-1b5cda2880a2": "Arkham App - Developer",
+  "919b0a22-7de1-4262-9f4a-d36d16a99a0b": "Arkham App - Report Generator",
+  "00c9b5ce-22a7-49d2-abb9-a3ec4ce4ddb6": "Arkham App - Support Agent",
+  "6a9bd496-7b6e-421c-b751-d1b3ed6caa19": "Arkham App - Viewer",
+};
+
 
 dotenv.config();
 
 const app = express();
+
+// Serve the images folder
+app.use('/images', express.static('images'));
 
 const config = {
   authRequired: false,                // allow anonymous access to /
@@ -28,11 +42,26 @@ function renderPage({ isAuthenticated, user }) {
   const loginUrl = '/login';
   const logoutUrl = '/logout';
 
-  const groups =
-    user?.groups ||
-    user?.['groups'] ||
-    user?.['https://example.com/groups'] ||
+// Extract groups in all supported formats
+// Extract groups in all supported formats (safe when user is null)
+let groups = [];
+
+if (user) {
+  groups =
+    user["https://arkham.live/groups"] ||
+    user.groups ||
+    user["groups"] ||
     [];
+
+  if (typeof groups === "string") {
+    groups = groups.split(",");
+  }
+}
+
+// Derive friendly roles from group GUIDs
+const roles = groups
+  .map(g => GROUP_ROLE_MAP[g] || null)
+  .filter(Boolean); // remove nulls
 
   const hasGroups = Array.isArray(groups) && groups.length > 0;
 
@@ -40,7 +69,7 @@ function renderPage({ isAuthenticated, user }) {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>SAML SSO Playground</title>
+  <title>Arkham SAML SSO Playground</title>
   <style>
     body {
       margin: 0;
@@ -83,6 +112,7 @@ function renderPage({ isAuthenticated, user }) {
       text-transform: uppercase;
       letter-spacing: .08em;
       color: #9ca3af;
+      margin-bottom: 1rem;
     }
     h1 {
       margin: 0;
@@ -188,7 +218,11 @@ function renderPage({ isAuthenticated, user }) {
       <div class="card-header">
         <div>
           <div class="pill">${pillText}</div>
-          <h1>SAML SSO Playground</h1>
+          <div style="display:flex; align-items:center; gap:.6rem;">
+            <img src="/images/ArkhamSmall.png" alt="Arkham Logo"
+                style="height:32px; width:auto; border-radius:.3rem;" />
+            <h1 style="margin:0;">Arkham SSO Playground</h1>
+          </div>
           <p class="muted">
             Auth0 ↔ Microsoft Entra ID via SAML · Inspect ID token claims, groups and session details.
           </p>
@@ -237,19 +271,27 @@ function renderPage({ isAuthenticated, user }) {
             For full token timings (iat, exp, etc.) hit the <code>/debug</code> endpoint.
           </p>
           ${
-            hasGroups
-              ? `
-                <div class="meta" style="margin-top:.8rem;"><strong>Groups:</strong></div>
-                <div class="tag-list">
-                  ${groups.map(g => `<span class="tag">${String(g)}</span>`).join('')}
-                </div>
-              `
-              : `
-                <p class="meta muted" style="margin-top:.8rem;">
-                  No group claims detected. Check your Entra SAML app's group claim config and Auth0 mappings.
-                </p>
-              `
-          }
+  groups.length > 0
+    ? `
+      <div class="meta" style="margin-top:.8rem;"><strong>Groups:</strong></div>
+      <div class="tag-list">
+        ${groups.map(g => `<span class="tag">${g}</span>`).join("")}
+      </div>
+      ${
+        roles.length > 0
+          ? `
+          <div class="meta" style="margin-top:1rem;"><strong>Derived Roles:</strong></div>
+          <div class="tag-list">
+            ${roles.map(r => `<span class="tag">${r}</span>`).join("")}
+          </div>
+          `
+          : ""
+      }
+    `
+    : `<p class="meta muted" style="margin-top:.8rem;">
+         No group claims detected.
+       </p>`
+}
         </div>
       </div>
     </div>

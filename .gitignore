@@ -1,0 +1,18 @@
+# NPM dependencies
+node_modules
+package-lock.json
+
+# IDE configurations
+.idea
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+
+# macOS files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Misc
+.env
