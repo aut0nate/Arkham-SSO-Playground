@@ -10,27 +10,27 @@ This application was created after recognising that I was configuring SAML authe
 
 To address this, the following components were configured from scratch:
 
-* The Azure Enterprise Application
-* The SAML configuration and group claim emission
-* The Auth0 SAML connection and claim mappings
-* The Auth0 Action enriching the ID token
+* The Azure Enterprise Application.
+* The SAML configuration and group claim emission.
+* The Auth0 SAML connection and claim mappings.
+* The Auth0 Action enriching the ID token.
 
 The goal is to provide a practical, observable environment that shows every step of the process, making the SAML → Auth0 → OIDC flow fully transparent and easier to reason about.
 
 A lightweight, clear, and practical **SAML → Auth0 → OIDC** authentication playground designed to help you understand how enterprise SSO flows work between:
 
-* Microsoft Entra ID (Azure AD)
-* Auth0 (acting as the SAML Service Provider / federation broker)
-* A Node.js Web App (OIDC Relying Party)
+* Microsoft Entra ID (Azure AD).
+* Auth0 (acting as the SAML Service Provider / federation broker).
+* A Node.js Web App (OIDC Relying Party).
 
 This project allows you to:
 
-* Perform real Microsoft Entra authentication via SAML
-* Inspect the raw ID token Auth0 issues after processing the SAML assertion
-* View Azure group GUID claims inside the token
-* See derived application roles based on group membership
-* Understand SAML → Auth0 → OIDC claim transformation
-* Explore Auth0 Actions for token enrichment
+* Perform real Microsoft Entra authentication via SAML.
+* Inspect the raw ID token Auth0 issues after processing the SAML assertion.
+* View Azure group GUID claims inside the token.
+* See derived application roles based on group membership.
+* Understand SAML → Auth0 → OIDC claim transformation.
+* Explore Auth0 Actions for token enrichment.
 
 ## Features
 
@@ -64,11 +64,11 @@ These roles correspond to the group mapping defined in `app.js`:
 
 ```bash
 const GROUP_ROLE_MAP = {
-  "defbac70-abd2-464d-a100-ae801597f814": "Arkham App - Administrator",
-  "3669003e-1155-4d33-9b00-1b5cda2880a2": "Arkham App - Developer",
-  "919b0a22-7de1-4262-9f4a-d36d16a99a0b": "Arkham App - Report Generator",
-  "00c9b5ce-22a7-49d2-abb9-a3ec4ce4ddb6": "Arkham App - Support Agent",
-  "6a9bd496-7b6e-421c-b751-d1b3ed6caa19": "Arkham App - Viewer"
+  "<GROUP_ID>": "Arkham App - Administrator",
+  "<GROUP_ID>": "Arkham App - Developer",
+  "<GROUP_ID>": "Arkham App - Report Generator",
+  "<GROUP_ID>": "Arkham App - Support Agent",
+  "<GROUP_ID>": "Arkham App - Viewer"
 };
 ```
 
@@ -128,37 +128,37 @@ This section describes how to create the Auth0 Application and the SAML Enterpri
 
 1. In Auth0 Dashboard, go to **Applications → Applications**.
 2. Click **Create Application**.
-3. Name it "Arkham SSO Playground".
+3. Name it "arkham-web".
 4. Choose **Regular Web Application**.
 5. After creation, configure:
 
-   * **Allowed Callback URLs:**
+   - **Allowed Callback URLs:**
 
      ```bash
      http://localhost:3000/callback
      ```
 
-   * **Allowed Logout URLs:**
+   - **Allowed Logout URLs:**
 
      ```bash
-     http://localhost:3000
+     http://localhost:3000/SignedOut
      ```
 
 6. Copy the following values into your local `.env`:
 
-* **ISSUER_BASE_URL** (your Auth0 domain)
-* **CLIENT_ID (your Auth0 application client id)**
-* **SESSION_SECRET**  **(your Auth0 application secret)**
+- **ISSUER_BASE_URL** (your Auth0 domain).
+- **CLIENT_ID** (your Auth0 application client id).
+- **SESSION_SECRET** (your Auth0 application secret).
 
 ### 2. Create the SAML Enterprise Connection in Auth0
 
 1. Navigate to **Authentication → Enterprise → SAML**.
 2. Click **Create Connection**.
-3. Name it "arkham-saml".
+3. Name it "arkham-web".
 4. Under **Settings**, configure:
 
-   * **Sign-In URL** → obtained from Azure (see Azure Entra Configuration below)
-   * **Signing Certificate (Base64 CER)** →obtained from Azure (see Azure Entra Configuration below)
+   - **Sign-In URL** → obtained from Azure (see Azure Entra Configuration below).
+   - **Signing Certificate (Base64 CER)** →obtained from Azure (see Azure Entra Configuration below).
 
 5. Under **Application Assignments**, ensure your newly created application is enabled.
 
@@ -170,55 +170,56 @@ This section describes the full process for configuring an Azure Enterprise Appl
 
 In Azure:
 
-1. Go to **Microsoft Entra ID**
-2. Select **Enterprise Applications**
-3. Click **New application**
-4. Choose **Create your own application**
-5. Choose **Integrate any other application you don't find…**
-6. Name it "Arkham SSO Playground"
+1. Go to **Microsoft Entra ID**.
+2. Select **Enterprise Applications**.
+3. Click **New application**.
+4. Choose **Create your own application**.
+5. Choose **Integrate any other application you don't find…**.
+6. Name it "Arkham Web (Auth0)".
 
 ### 2. Enable SAML-based Sign‑on
 
-1. Under **Manage**, select **Single sign-on**
-2. Choose **SAML**
+1. Under **Manage**, select **Single sign-on**.
+2. Choose **SAML**.
 3. Configure:
 
-   * **Identifier (Entity ID):**
+   - **Identifier (Entity ID):**
 
      ```bash
-     urn:auth0:YOURTENANT:arkham-saml
+     urn:auth0:YOURTENANT:arkham-web
      ```
 
-   * **Reply URL:**
+   - **Reply URL:**
 
      ```bash
-     https://YOUR_AUTH0_DOMAIN/login/callback?connection=arkham-saml
+     https://YOUR_AUTH0_DOMAIN/login/callback?connection=arkham-web
      ```
 
 ### 3. Create Application Groups in Azure
 
 Create your security groups in Azure, for example:
 
-* Arkham App - Administrator
-* Arkham App - Developer
-* Arkham App - Report Generator
-* Arkham App - Support Agent
-* Arkham App - Viewer
+- Arkham - Change Approvers
+- Arkham App - Administrator
+- Arkham App - Developer
+- Arkham App - Report Generator
+- Arkham App - Support Agent
+- Arkham App - Viewer
 
 Assign these groups to the Enterprise Application under:
 
-Enterprise Application → Users and Groups → Add User/Group
+Enterprise Application → Users and Groups → Add User/Group.
 
 ### 4. Configure the SAML Group Claim
 
 In the Enterprise Application:
 
-1. Go to **Single Sign-On**
-2. Click **Edit** on **Attribute and Claims**
-3. Click **Add a Group Claim**
-4. Choose **Groups assigned to the application**
-5. Choose **Group ID** as the **Source Attribute**
-6. Save
+1. Go to **Single Sign-On**.
+2. Click **Edit** on **Attribute and Claims**.
+3. Click **Add a Group Claim**.
+4. Choose **Groups assigned to the application**.
+5. Choose **Group ID** as the **Source Attribute**.
+6. Click Save.
 
 Azure will now emit:
 
@@ -230,8 +231,8 @@ http://schemas.microsoft.com/ws/2008/06/identity/claims/groups
 
 In Auth0:
 
-1. Go to **Authentication → Enterprise → SAML → arkham-saml**
-2. Open **Mappings**
+1. Go to **Authentication → Enterprise → SAML → arkham-change-app**.
+2. Open **Mappings**.
 3. Add:
 
 ```json
@@ -244,13 +245,14 @@ This maps Azure's SAML group IDs into the Auth0 user profile.
 
 In Auth0:
 
-1. Go to **Actions → Triggers → Post Login**
-2. Click **Add Action → Create a Custom Action**
+1. Go to **Actions → Triggers → Post Login**.
+2. Click **Add Action → Create a Custom Action**.
 3. Provide the following information:
 
-   * **Name:** AddGroupsToIDToken
-   * **Trigger:** Login/Post Login
-   * **Runtime:** Node 22
+   - **Name:** AddGroupsToIDToken.
+   - **Trigger:** Login/Post Login.
+   - **Runtime:** Node 22.
+
 4. Click **Create**.
 5. Remove any code in the code block and paste the following:
 
