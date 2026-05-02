@@ -306,3 +306,7 @@ Shows the current user session and ID token claims.
 ### `/debug`
 
 Displays raw token payloads and timing information.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](./LICENSE) for details.
